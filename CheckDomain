@@ -1,0 +1,37 @@
+import whois
+from openpyxl import load_workbook
+from openpyxl import Workbook
+
+
+def is_domain_active(domain):
+    try:
+        w = whois.whois(domain)
+        # Check if the domain's creation date exists (not expired)
+        return w.creation_date is not None
+    except Exception as e:
+        print(f"Error checking domain {domain}: {e}")
+        return False
+
+def main():
+    # Load domains from an existing Excel file
+    input_filename = "CheckDomain.xlsx"
+    output_filename = "domain_activity.xlsx"
+
+    input_wb = load_workbook(input_filename)
+    input_ws = input_wb.active
+
+    # Create a new Excel workbook for the results
+    output_wb = Workbook()
+    output_ws = output_wb.active
+    output_ws.append(["Domain", "Active"])
+
+    for row in input_ws.iter_rows(min_row=2, values_only=True):  # Assuming data starts from the second row
+        domain = row[0]
+        is_active = is_domain_active(domain)
+        output_ws.append([domain, "Yes" if is_active else "No"])
+
+    # Save the results to a new Excel file
+    output_wb.save(output_filename)
+
+if __name__ == "__main__":
+    main()
